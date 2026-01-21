@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Todo App</title>
+  <style>
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      /* 初始背景色，用你给的RGB值 */
+      background-color: rgb(96, 99, 123);
+      transition: background-color 0.2s linear;
+    }
+
+    /* 显示当前RGB值的悬浮面板 */
+    /* .rgb-panel {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      font-family: "Consolas", monospace;
+      font-size: 14px;
+      z-index: 100;
+    } */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .todo-container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 500px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #333;
+      font-size: 2rem;
+    }
+
+    .add-todo {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+    }
+
+    #todo-input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 2px solid #eee;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    #todo-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    #add-btn {
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: transform 0.2s;
+    }
+
+    #add-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .todo-list {
+      list-style: none;
+    }
+
+    .todo-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      transition: background 0.3s;
+    }
+
+    .todo-item:hover {
+      background: #f0f0f0;
+    }
+
+    .todo-item.completed .todo-text {
+      text-decoration: line-through;
+      color: #999;
+    }
+
+    .todo-text {
+      flex: 1;
+      margin-left: 10px;
+      font-size: 1rem;
+      color: #333;
+    }
+
+    .delete-btn {
+      background: transparent;
+      border: none;
+      color: #e74c3c;
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 5px 8px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .delete-btn:hover {
+      background: #ffebee;
+    }
+  </style>
+</head>
+<body>
+    <!-- 实时显示当前RGB值 -->
+  <div class="rgb-panel" id="rgb-panel">
+    <!-- R: 96<br>
+    G: 99<br>
+    B: 123 -->
+  </div>
+
+  <script>
+    // 初始RGB值（你提供的）
+    let r = 96;
+    let g = 99;
+    let b = 123;
+
+    // 每个通道的变化步长（控制变化幅度，值越小变化越细腻）
+    const step = 0.3;
+
+    // 每个通道的变化方向（1=增加，-1=减少）
+    let rDir = 1;
+    let gDir = 1;
+    let bDir = 1;
+
+    // 变化范围边界（防止颜色太亮或太暗）
+    const min = 60;
+    const max = 160;
+
+    // 更新背景色
+    function updateBackground() {
+      // 微小调整每个通道的值
+      r += rDir * step;
+      g += gDir * step;
+      b += bDir * step;
+
+      // 碰到边界就反转方向
+      if (r >= max || r <= min) rDir *= -1;
+      if (g >= max || g <= min) gDir *= -1;
+      if (b >= max || b <= min) bDir *= -1;
+
+      // 应用新的背景色
+      document.body.style.backgroundColor = `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+
+      // 更新显示面板
+      // document.getElementById('rgb-panel').innerHTML = `
+      //   R: ${Math.round(r)}<br>
+      //   G: ${Math.round(g)}<br>
+      //   B: ${Math.round(b)}
+      // `;
+
+      // 用requestAnimationFrame实现60fps平滑更新
+      requestAnimationFrame(updateBackground);
+    }
+
+    // 启动动画
+    updateBackground();
+  </script>
+  <div class="todo-container">
+    <h1>Todo App</h1>
+    <div class="add-todo">
+      <input type="text" id="todo-input" placeholder="Add a todo" />
+      <button id="add-btn">Add Todo</button>
+    </div>
+    <ul class="todo-list" id="todo-list"></ul>
+  </div>
+
+  <script>
+    // 获取DOM元素
+    const todoInput = document.getElementById("todo-input");
+    const addBtn = document.getElementById("add-btn");
+    const todoList = document.getElementById("todo-list");
+
+    // 加载本地存储的待办事项
+    let todos = JSON.parse(localStorage.getItem("todos")) || [];
+
+    // 渲染待办事项列表
+    function renderTodos() {
+      todoList.innerHTML = "";
+      todos.forEach((todo, index) => {
+        const li = document.createElement("li");
+        li.className = `todo-item ${todo.completed ? "completed" : ""}`;
+        li.innerHTML = `
+          <input type="checkbox" ${todo.completed ? "checked" : ""} />
+          <span class="todo-text">${todo.text}</span>
+          <button class="delete-btn" data-index="${index}">del</button>
+        `;
+        todoList.appendChild(li);
+      });
+    }
+
+    // 添加新待办事项
+    function addTodo() {
+      const text = todoInput.value.trim();
+      if (text) {
+        todos.push({ text, completed: false });
+        localStorage.setItem("todos", JSON.stringify(todos));
+        renderTodos();
+        todoInput.value = "";
+      }
+    }
+
+    // 切换完成状态
+    function toggleComplete(e) {
+      if (e.target.type === "checkbox") {
+        const index = e.target.parentElement.querySelector(".delete-btn").dataset.index;
+        todos[index].completed = e.target.checked;
+        localStorage.setItem("todos", JSON.stringify(todos));
+        renderTodos();
+      }
+    }
+
+    // 删除待办事项
+    function deleteTodo(e) {
+      if (e.target.classList.contains("delete-btn")) {
+        const index = e.target.dataset.index;
+        todos.splice(index, 1);
+        localStorage.setItem("todos", JSON.stringify(todos));
+        renderTodos();
+      }
+    }
+
+    // 事件监听
+    addBtn.addEventListener("click", addTodo);
+    todoInput.addEventListener("keypress", (e) => e.key === "Enter" && addTodo());
+    todoList.addEventListener("change", toggleComplete);
+    todoList.addEventListener("click", deleteTodo);
+
+    // 初始渲染
+    renderTodos();
+  </script>
+</body>
+</html>
