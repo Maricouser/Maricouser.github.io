@@ -12,29 +12,7 @@
       /* 初始背景色，用你给的RGB值 */
       background-color: rgb(96, 99, 123);
       transition: background-color 0.2s linear;
-    }
-
-    /* 显示当前RGB值的悬浮面板 */
-    /* .rgb-panel {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(0, 0, 0, 0.7);
-      color: white;
-      padding: 15px 20px;
-      border-radius: 8px;
-      font-family: "Consolas", monospace;
-      font-size: 14px;
-      z-index: 100;
-    } */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
+      /* 最小为视口高度 */
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -42,9 +20,33 @@
       padding: 20px;
     }
 
+    /* 显示当前RGB值的悬浮面板 */
+    /* .rgb-panel {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      //设置这个悬浮面板的背景样式。rgba(0, 0, 0, 0.7) 是半透明黑色：前三个值 0, 0, 0 代表纯黑色。第四个值 0.7 代表透明度（0 完全透明，1 完全不透明），这里是 70% 不透明，30% 透明。
+      background: rgba(0, 0, 0, 0.7);
+      //面板内文字的颜色
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      font-family: "Consolas", monospace;
+      font-size: 14px;
+      垂直于屏幕方向（Z 轴）的堆叠顺序，越大越靠上，该代码表示永远显示在所以元素最上方
+      z-index: 100;
+    } */
+    * {
+      margin: 0;
+      padding: 0;
+      /* padding 和 border 都包含在这个宽度里，不会额外撑开元素 */
+      box-sizing: border-box;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
     .todo-container {
       background: white;
       padding: 30px;
+      /* 给元素的四个角添加圆角效果，值 12px 代表圆角的半径大小 */
       border-radius: 12px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
       width: 100%;
@@ -52,6 +54,7 @@
     }
 
     h1 {
+      /* 居中显示 */
       text-align: center;
       margin-bottom: 25px;
       color: #333;
@@ -84,16 +87,19 @@
       color: white;
       border: none;
       border-radius: 8px;
+      /* 把鼠标变成手型 */
       cursor: pointer;
       font-size: 1rem;
       transition: transform 0.2s;
     }
 
     #add-btn:hover {
+      /* 按钮向上动的动画 */
       transform: translateY(-2px);
     }
 
     .todo-list {
+      /* 去除ul前的小圆点 */
       list-style: none;
     }
 
@@ -178,7 +184,7 @@
       if (g >= max || g <= min) gDir *= -1;
       if (b >= max || b <= min) bDir *= -1;
 
-      // 应用新的背景色
+      // 应用新的背景色，四舍五入取整
       document.body.style.backgroundColor = `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
 
       // 更新显示面板
@@ -196,10 +202,10 @@
     updateBackground();
   </script>
   <div class="todo-container">
-    <h1>Todo App</h1>
+    <h1>待办事件</h1>
     <div class="add-todo">
-      <input type="text" id="todo-input" placeholder="Add a todo" />
-      <button id="add-btn">Add Todo</button>
+      <input type="text" id="todo-input" placeholder="添加一个新事件吧" />
+      <button id="add-btn">添加</button>
     </div>
     <ul class="todo-list" id="todo-list"></ul>
   </div>
@@ -211,6 +217,8 @@
     const todoList = document.getElementById("todo-list");
 
     // 加载本地存储的待办事项
+    // localStorage 是浏览器提供的本地存储 API，getItem("todos") 就是去获取名为 todos 的存储项。
+    // 这里默认值是 []（空数组），所以即使本地存储没有数据，todos 也会被初始化为一个空数组，避免后续操作（比如 push、forEach）因为 null 而报错。
     let todos = JSON.parse(localStorage.getItem("todos")) || [];
 
     // 渲染待办事项列表
@@ -222,7 +230,7 @@
         li.innerHTML = `
           <input type="checkbox" ${todo.completed ? "checked" : ""} />
           <span class="todo-text">${todo.text}</span>
-          <button class="delete-btn" data-index="${index}">del</button>
+          <button class="delete-btn" data-index="${index}">删除</button>
         `;
         todoList.appendChild(li);
       });
